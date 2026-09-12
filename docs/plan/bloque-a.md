@@ -43,7 +43,7 @@ Detalle completo de las 19 decisiones: ver `SPEC.md` y `docs/adr/`.
   request; aparece la confirmacion `[y/N]` antes del tercer prompt; un request
   fallido no entra al historial y se registra como `## error`.
 
-- [ ] 7. `feat:` `--check-models`
+- [x] 7. `feat:` `--check-models`
   **Verifica**: compara la tabla hardcodeada contra `GET /models` en vivo y
   reporta diferencias.
 
