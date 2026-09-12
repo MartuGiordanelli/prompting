@@ -17,7 +17,7 @@ Detalle completo de las 19 decisiones: ver `SPEC.md` y `docs/adr/`.
 
 ## Tareas
 
-- [ ] 1. `docs:` SPEC + este plan (este commit)
+- [x] 1. `docs:` SPEC + este plan (este commit)
   **Verifica**: `SPEC.md` no tiene ningun `TBD` salvo el proveedor del slot 4.
 
 - [x] 2. `feat:` `chat/slots.py` + `chat/env.py`, commitear `.env.example`
@@ -51,7 +51,7 @@ Detalle completo de las 19 decisiones: ver `SPEC.md` y `docs/adr/`.
   **Verifica**: extraccion byte a byte contra el fence del log; falla si la
   respuesta tiene mas de un fence `python`; ignora el texto de `### reasoning`.
 
-- [ ] 9. `docs:` README "Usar la interfaz de chat"
+- [x] 9. `docs:` README "Usar la interfaz de chat"
   **Verifica**: smoke manual, un chat por slot — son los 4 logs que pide el
   criterio 1.1 de la rubrica.
 
