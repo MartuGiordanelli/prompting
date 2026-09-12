@@ -382,7 +382,9 @@ def _send_message(
         return
 
     choice = response["choices"][0]["message"]
-    text = choice.get("content", "")
+    # content puede venir null (modelo de razonamiento sin tokens, refusal):
+    # sigue siendo un turno real y facturado, se loguea como string vacio.
+    text = choice.get("content") or ""
     reasoning = choice.get("reasoning")
     usage = response.get("usage", {})
 

@@ -141,17 +141,20 @@ class BuildRequestBodyTests(unittest.TestCase):
 
 class SendRequestTests(unittest.TestCase):
     def test_caso_exitoso_devuelve_dict_parseado(self):
+        expected = {
+            "id": "abc",
+            "choices": [{"message": {"content": "hola"}}],
+            "usage": {},
+        }
         fake_response = MagicMock()
-        fake_response.read.return_value = json.dumps({"id": "abc", "usage": {}}).encode(
-            "utf-8"
-        )
+        fake_response.read.return_value = json.dumps(expected).encode("utf-8")
         fake_response.__enter__.return_value = fake_response
         fake_response.__exit__.return_value = False
 
         with patch("urllib.request.urlopen", return_value=fake_response) as mock_urlopen:
             result = send_request({"model": "x"}, "fake-key")
 
-        self.assertEqual(result, {"id": "abc", "usage": {}})
+        self.assertEqual(result, expected)
         _, kwargs = mock_urlopen.call_args
         self.assertEqual(kwargs["timeout"], 600)
 
@@ -193,6 +196,34 @@ class SendRequestTests(unittest.TestCase):
                 send_request({"model": "x"}, "fake-key")
 
         self.assertIsNone(ctx.exception.status)
+
+    def test_200_sin_choices_levanta_openrouter_error_con_body_crudo(self):
+        raw_body = json.dumps({"error": {"message": "algo raro"}})
+        fake_response = MagicMock()
+        fake_response.read.return_value = raw_body.encode("utf-8")
+        fake_response.__enter__.return_value = fake_response
+        fake_response.__exit__.return_value = False
+
+        with patch("urllib.request.urlopen", return_value=fake_response):
+            with self.assertRaises(OpenRouterError) as ctx:
+                send_request({"model": "x"}, "fake-key")
+
+        self.assertIsNone(ctx.exception.status)
+        self.assertEqual(ctx.exception.body, raw_body)
+
+    def test_200_con_choices_vacio_levanta_openrouter_error_con_body_crudo(self):
+        raw_body = json.dumps({"choices": []})
+        fake_response = MagicMock()
+        fake_response.read.return_value = raw_body.encode("utf-8")
+        fake_response.__enter__.return_value = fake_response
+        fake_response.__exit__.return_value = False
+
+        with patch("urllib.request.urlopen", return_value=fake_response):
+            with self.assertRaises(OpenRouterError) as ctx:
+                send_request({"model": "x"}, "fake-key")
+
+        self.assertIsNone(ctx.exception.status)
+        self.assertEqual(ctx.exception.body, raw_body)
 
 
 if __name__ == "__main__":

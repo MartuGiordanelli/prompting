@@ -117,9 +117,10 @@ def send_request(body: dict, api_key: str) -> dict:
 
     Raises:
         OpenRouterError: si la API devuelve un status de error, si la
-            respuesta no parsea como JSON, o si falla la conexion (red o
-            timeout). El llamador la atrapa y decide como registrarla (no es
-            un turno, ver SPEC.md S2.2).
+            respuesta no parsea como JSON, si el JSON no trae un ``choices``
+            usable (ausente, no es lista, o vacio), o si falla la conexion
+            (red o timeout). El llamador la atrapa y decide como registrarla
+            (no es un turno, ver SPEC.md S2.2).
     """
     data = json.dumps(body).encode("utf-8")
     request = urllib.request.Request(
@@ -150,10 +151,20 @@ def send_request(body: dict, api_key: str) -> dict:
         ) from exc
 
     try:
-        return json.loads(raw_body)
+        parsed = json.loads(raw_body)
     except json.JSONDecodeError as exc:
         raise OpenRouterError(
             "la respuesta de OpenRouter no parseo como JSON",
             status=None,
             body=raw_body,
         ) from exc
+
+    choices = parsed.get("choices") if isinstance(parsed, dict) else None
+    if not isinstance(choices, list) or not choices:
+        raise OpenRouterError(
+            "la respuesta de OpenRouter no trajo choices usables",
+            status=None,
+            body=raw_body,
+        )
+
+    return parsed

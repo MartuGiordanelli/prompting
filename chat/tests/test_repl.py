@@ -1,8 +1,11 @@
 """Tests de chat/repl.py. Sin red: send_request se mockea."""
 
+import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+from chat.log import ConversationLog
 from chat.openrouter import OpenRouterError
 from chat.repl import ReplState, run_repl
 from chat.slots import get_slot
@@ -183,6 +186,67 @@ class SendMessageTests(unittest.TestCase):
             state.messages[1], {"role": "assistant", "content": "hola de vuelta"}
         )
         self.assertEqual(state.prompt_count, 1)
+
+
+class ContentNuloYSinChoicesTests(unittest.TestCase):
+    """SPEC.md S2: content null se loguea como turno real; sin choices no es turno."""
+
+    def _run_con_log_real(self, tmpdir, input_func):
+        state = ReplState(get_slot(1))
+        outputs = []
+        with patch(
+            "chat.repl.ConversationLog",
+            lambda **kwargs: ConversationLog(logs_dir=tmpdir, **kwargs),
+        ):
+            run_repl(
+                state, "fake-key", input_func=input_func, print_func=outputs.append
+            )
+        return state, outputs
+
+    @patch("chat.repl.send_request")
+    def test_content_null_no_rompe_y_loguea_turno_con_string_vacio(self, mock_send):
+        mock_send.return_value = {
+            "choices": [{"message": {"content": None}}],
+            "usage": {"prompt_tokens": 10, "completion_tokens": 0, "cost": 0.0},
+        }
+        with tempfile.TemporaryDirectory() as tmpdir:
+            state, outputs = self._run_con_log_real(
+                tmpdir, _scripted_input(["hola", "/exit"])
+            )
+
+            self.assertEqual(state.prompt_count, 1)
+            self.assertEqual(len(state.messages), 2)
+            self.assertEqual(
+                state.messages[1], {"role": "assistant", "content": ""}
+            )
+
+            log_files = list(Path(tmpdir).glob("*.md"))
+            self.assertEqual(len(log_files), 1)
+            log_text = log_files[0].read_text(encoding="utf-8")
+            self.assertIn("## assistant", log_text)
+            self.assertIn("```json", log_text)
+            self.assertIn('"prompt_tokens": 10', log_text)
+
+    @patch("chat.repl.send_request")
+    def test_sin_choices_se_loguea_como_error_y_no_cuenta_turno(self, mock_send):
+        mock_send.side_effect = OpenRouterError(
+            "la respuesta de OpenRouter no trajo choices usables",
+            status=None,
+            body='{"choices": []}',
+        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            state, outputs = self._run_con_log_real(
+                tmpdir, _scripted_input(["hola", "/exit"])
+            )
+
+            self.assertEqual(state.prompt_count, 0)
+            self.assertEqual(state.messages, [])
+
+            log_files = list(Path(tmpdir).glob("*.md"))
+            self.assertEqual(len(log_files), 1)
+            log_text = log_files[0].read_text(encoding="utf-8")
+            self.assertIn("## error", log_text)
+            self.assertNotIn("## assistant", log_text)
 
 
 if __name__ == "__main__":
