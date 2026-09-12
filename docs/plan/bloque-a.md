@@ -33,7 +33,7 @@ Detalle completo de las 19 decisiones: ver `SPEC.md` y `docs/adr/`.
   **Verifica**: test de contrato del formato de log, con un parser **independiente**
   escrito contra `SPEC.md` §2 (no reutiliza el codigo de escritura).
 
-- [ ] 5. `feat:` `chat/usage.py`
+- [x] 5. `feat:` `chat/usage.py`
   **Verifica**: un campo ausente en la respuesta de la API se muestra `n/d`,
   nunca `0`.
 
