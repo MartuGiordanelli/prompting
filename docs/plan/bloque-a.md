@@ -47,7 +47,7 @@ Detalle completo de las 19 decisiones: ver `SPEC.md` y `docs/adr/`.
   **Verifica**: compara la tabla hardcodeada contra `GET /models` en vivo y
   reporta diferencias.
 
-- [ ] 8. `feat:` `scripts/extract_code.py`
+- [x] 8. `feat:` `scripts/extract_code.py`
   **Verifica**: extraccion byte a byte contra el fence del log; falla si la
   respuesta tiene mas de un fence `python`; ignora el texto de `### reasoning`.
 
