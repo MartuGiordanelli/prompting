@@ -24,7 +24,7 @@ Detalle completo de las 19 decisiones: ver `SPEC.md` y `docs/adr/`.
   **Verifica**: tests de `env.py` — precedencia (env real gana sobre archivo),
   comentarios en el `.env`, falla clara si falta la key.
 
-- [ ] 3. `feat:` `chat/openrouter.py`
+- [x] 3. `feat:` `chat/openrouter.py`
   **Verifica**: el body armado es exacto por slot — `cache_control` solo en el
   slot 2, `estatico + delta` sin separador agregado, `reasoning` solo si hay
   `/effort` activo, `provider` solo en los slots que lo fijan.
