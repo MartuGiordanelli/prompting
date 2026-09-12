@@ -37,7 +37,7 @@ Detalle completo de las 19 decisiones: ver `SPEC.md` y `docs/adr/`.
   **Verifica**: un campo ausente en la respuesta de la API se muestra `n/d`,
   nunca `0`.
 
-- [ ] 6. `feat:` `chat/repl.py` + `chat/__main__.py`
+- [x] 6. `feat:` `chat/repl.py` + `chat/__main__.py`
   **Verifica**: cambiar de modelo o de cualquier parametro abre conversacion
   nueva; un effort invalido para el slot activo se rechaza antes de mandar el
   request; aparece la confirmacion `[y/N]` antes del tercer prompt; un request
