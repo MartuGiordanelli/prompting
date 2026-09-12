@@ -29,7 +29,7 @@ Detalle completo de las 19 decisiones: ver `SPEC.md` y `docs/adr/`.
   slot 2, `estatico + delta` sin separador agregado, `reasoning` solo si hay
   `/effort` activo, `provider` solo en los slots que lo fijan.
 
-- [ ] 4. `feat:` `chat/log.py`
+- [x] 4. `feat:` `chat/log.py`
   **Verifica**: test de contrato del formato de log, con un parser **independiente**
   escrito contra `SPEC.md` §2 (no reutiliza el codigo de escritura).
 
