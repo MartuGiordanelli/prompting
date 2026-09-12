@@ -9,39 +9,102 @@ Vocabulario: `CONTEXT.md`. Decisiones y su porque: `docs/adr/`.
 
 ## 1. Interfaz de chat (ejercicio 1)
 
-### 1.1 Forma — TBD
+### 1.1 Forma
 
-**Sin decidir.** Las opciones en juego son CLI de terminal, web local minima
-(FastAPI + HTML) o TUI. Nada de lo que sigue depende de cual se elija: el
-contrato de abajo es el mismo en los tres casos.
+REPL de terminal, `python3 -m chat`. Solo biblioteca estandar: HTTP con
+`urllib`, sin `requests` ni el SDK de OpenAI (el SDK puede ocultar campos del
+usage crudo).
 
-Al cerrar esta decision hay que fijar aca el punto de entrada y el layout del
-modulo, y anotarlo en `CLAUDE.md`.
+Layout del paquete:
+
+```
+chat/
+  __main__.py    punto de entrada, `python3 -m chat`
+  slots.py       tabla de slots hardcodeada + validacion
+  env.py         parser minimo de .env
+  openrouter.py  armado de requests y llamada HTTP
+  log.py         escritura del log (contrato en §2)
+  usage.py       formateo de la linea de usage
+  repl.py        loop de comandos
+  tests/         unittest, sin red
+scripts/
+  extract_code.py   standalone, NO importa de chat/
+```
+
+Comandos del REPL: `/model N`, `/effort [nivel|off]`, `/schema <ruta.json>|off`,
+`/file <estatico> [<delta>]`, `/show-reasoning`. Enter envia el mensaje;
+multilinea entre `"""`.
 
 ### 1.2 Modelos servidos
 
-Cuatro slots, uno por proveedor (tabla completa en `CONTEXT.md`). Los ids estan
-verificados por la catedra al 2026-09-02; **antes de codear hay que confirmarlos
-contra `GET https://openrouter.ai/api/v1/models`**. Si alguno cayo del catalogo,
-se reemplaza por el equivalente vigente del mismo proveedor y **la sustitucion se
-anota en `INFORME.md`**.
+Cuatro slots, uno por proveedor (tabla completa en `CONTEXT.md`). Ids
+re-verificados contra `GET https://openrouter.ai/api/v1/models` el 2026-09-12:
+siguen vigentes, sin sustituciones.
+
+| Slot | Modelo | Efforts (catalogo) | Default | `cache_control` | Proveedor fijado |
+|---|---|---|---|---|---|
+| 1 | `openai/gpt-5.6-luna` | max, xhigh, high, medium, low, none | medium | no | — |
+| 2 | `anthropic/claude-haiku-4.5` | ninguno | — | si | `anthropic` |
+| 3 | `google/gemini-3.7-flash` | high, medium, low (razonamiento obligatorio) | medium | no | — |
+| 4 | `deepseek/deepseek-v4-flash-0731` | max, high, low | high | no | TBD (lo elige el bloque C) |
+
+Los efforts de cada slot salen del campo `reasoning.supported_efforts` /
+`default_effort` que trae `/models` para ese modelo. Sin `/effort` no se manda
+`reasoning`.
+
+Proveedor fijado = `provider: {order: [slug], allow_fallbacks: false}`. Motivo:
+al slot 4 (DeepSeek v4 flash) lo sirven ~28 terceros y el sticky routing de
+OpenRouter para cache vence a los 10 min de inactividad; sin fijar proveedor, el
+segundo intento de una serie puede caer en otro proveedor y dar
+`cached_tokens: 0`, perdiendo el criterio 2.4 de la rubrica.
+
+`python3 -m chat --check-models` compara esta tabla contra `/models` en vivo y
+avisa diferencias (id caido del catalogo, efforts que cambiaron).
 
 ### 1.3 Comportamiento requerido
 
 - Permite elegir el modelo.
-- **Cambiar de modelo cierra la conversacion actual y empieza una nueva.** No se
-  arrastra historial entre modelos.
+- **Cambiar de modelo o cualquier parametro de sesion (`/effort`, `/schema`)
+  cierra la conversacion actual y empieza una nueva.** No se arrastra historial
+  entre configuraciones. Pide confirmacion si la conversacion actual ya tiene
+  turnos.
+- `/effort` y `/schema` son de sesion, validas en cualquier slot, y se validan
+  contra la tabla de slots antes de mandar el request. Sin `/effort` no se manda
+  `reasoning`.
 - Slot 1: permite elegir el nivel de `reasoning.effort`.
 - Slot 2: marca el bloque estatico con `cache_control: {"type": "ephemeral"}`.
 - Slot 3: acepta un JSON Schema y lo manda como salida estructurada.
-- Despues de **cada** respuesta muestra los cinco valores del usage: tokens de
-  entrada, de salida, de razonamiento, cacheados y costo.
+- `/file <estatico> [<delta>]` arma **un** mensaje `user`. En el slot 2, el
+  `content` va en 2 partes con `cache_control: {"type": "ephemeral"}` en la
+  primera (el estatico). En el resto de los slots, `content` es un string
+  `estatico + delta`, **sin separador agregado** entre ambos. Nada de esto va en
+  el rol `system`.
+- `/schema <ruta.json>` manda `response_format: {type: "json_schema",
+  json_schema: {name, strict: true, schema}}`. El REPL solo chequea que la
+  respuesta parsee como JSON valido (✓/✗ en pantalla), no valida contra el
+  schema. `/schema off` lo saca de la sesion.
+- Confirmacion `[y/N]` antes de mandar el **tercer** prompt de una conversacion
+  ("esto quema el intento", ver `CONTEXT.md`).
+- Un request fallido **no** es turno: no entra al historial de la conversacion,
+  se registra en el log como bloque `## error`. Timeout de 600s.
+- Despues de **cada** respuesta muestra el usage en una linea:
+  `in N (cached N) · out N (reasoning N) · $cost · cache_discount $X`. Un campo
+  ausente en la respuesta de la API se muestra como `n/d`, **nunca `0`**
+  (hallazgo del criterio 3.2: `0` implica "se cobro y dio cero", `n/d` implica
+  "la API no informo este campo", son cosas distintas). Sin acumulados entre
+  turnos ni entre conversaciones — eso lo hace el bloque D con
+  `usage_report.py`.
+- El razonamiento del modelo se muestra colapsado en pantalla salvo que se pida
+  `/show-reasoning`.
 - Al cerrar cada turno, escribe/actualiza el log de la conversacion.
 
 ### 1.4 Configuracion
 
 La key se lee de la variable de entorno `OPENROUTER_API_KEY`. Hay un
-`.env.example` versionado como plantilla; `.env` esta ignorado.
+`.env.example` versionado como plantilla; `.env` esta ignorado. El parser de
+`.env` es minimo y de stdlib; si la variable de entorno real ya esta seteada,
+gana sobre lo que diga el archivo. Sin key en ninguno de los dos lados, el
+programa falla al arrancar.
 
 ---
 
@@ -58,8 +121,13 @@ turno de la conversacion. Lo genera la interfaz. Nadie lo renombra.
 
 ### 2.2 Estructura
 
-Encabezado con: modelo, timestamp de inicio, y los parametros no-default de la
-corrida (effort, schema, cache_control).
+Encabezado con: modelo, proveedor fijado (si lo hay), effort (`high` explicito
+si se pidio, o `default del modelo (high)` si se uso el default sin pedirlo),
+ruta del schema (si lo hay), `cache_control` (si lo hay), y timestamp de inicio.
+
+El archivo se crea en el **primer intento de envio** de la conversacion, no
+recien en el primer turno exitoso: asi se puede registrar un error previo al
+primer turno. La escritura es append-only.
 
 Despues, un bloque por turno:
 
@@ -70,6 +138,12 @@ Despues, un bloque por turno:
 
 ## assistant — <timestamp>
 
+### reasoning
+
+```text
+<texto de razonamiento, si la API lo devolvio, ANTES de la respuesta>
+```
+
 <la respuesta tal cual llego>
 
 ```json
@@ -77,15 +151,41 @@ Despues, un bloque por turno:
 ```
 ```
 
+La subseccion `### reasoning` solo aparece si la API devolvio texto de
+razonamiento para ese turno.
+
+Un request fallido se registra como bloque `## error — <timestamp>`, con el
+status y el body en un fence ` ```text ` (**nunca** ` ```json `: el script de
+usage extrae los fences `json` y un error ahi rompe el reporte). No cuenta como
+turno.
+
 El bloque de usage se emite **tal cual viene de la API**. No se filtran campos,
 no se redondean numeros, no se renombran claves. Es lo que hace que el log sea
 evidencia y no un resumen.
+
+**Verificar pendiente en implementacion**: si la respuesta de OpenRouter trae un
+campo `provider` (la doc no lo confirma). Si viene, va al log.
 
 ### 2.3 Invariantes
 
 - Un log = una conversacion = un modelo.
 - Los timestamps son monotonos crecientes dentro del archivo.
 - Todo turno de `assistant` tiene su bloque de usage. Sin excepciones.
+- Los **unicos** fences `json` del log son los bloques de usage. Cualquier otro
+  bloque de codigo o de error usa `text` (o el lenguaje que corresponda, nunca
+  `json`).
+
+### 2.4 Extraccion de codigo
+
+`scripts/extract_code.py <log> [--out vida.py | --check vida.py]` es standalone:
+**no importa nada de `chat/`**. Toma el **ultimo** fence ` ```python ` de la
+respuesta del **ultimo turno assistant** del log (nunca de la subseccion
+`### reasoning`) y escribe su contenido, mas un `\n` final, en la ruta de
+`--out`; con `--check` compara byte a byte contra el archivo dado en vez de
+escribir.
+
+Falla si esa respuesta tiene mas de un fence `python`: la ambiguedad de cual es
+"el" bloque de codigo no se resuelve en silencio.
 
 ---
 
@@ -97,6 +197,12 @@ en stdout las tablas markdown que van a `INFORME.md`:
 - Por intento: tokens de entrada, salida, razonamiento, cacheados y costo.
 - Totales.
 - Ahorro por caching, **derivado** (no solo el conteo de `cached_tokens`).
+- Tabla "ej1: slot 2 vs slot 4, misma pregunta" — contrasta el costo de la misma
+  consulta entre el slot con cache explicito y el escalon barato (§4.1).
+
+El script solo lee fences ` ```json `; un bloque `## error` con fence `text` no
+lo confunde y sus diferencias contra el dashboard de OpenRouter se explican en
+`INFORME.md`.
 
 No transcribir estos numeros a mano. El punto del script es que el informe no
 pueda reportar menos intentos de los que hay.

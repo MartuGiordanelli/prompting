@@ -74,10 +74,13 @@ CONTEXT.md           glosario
 SPEC.md              que se construye y con que contrato
 INFORME.md           trabajo previo + la cuenta final del ejercicio 3
 docs/adr/            decisiones dificiles de revertir, con su porque
+docs/plan/           plan de implementacion del bloque A + proximos pasos de B, C, D
+chat/                interfaz de chat (REPL, `python3 -m chat`), con chat/tests/
 prompts/ej1/         prompts guionados de las demos de los 4 slots
 prompts/conway/      estatico.md (inmutable) + intento-NN.md (el delta)
 logs/                logs crudos + README.md como indice
 scripts/             usage_report.py: agrega los totales desde logs/
+                     extract_code.py: extrae vida.py del log ganador
 ```
 
 ## Como se corren los tests

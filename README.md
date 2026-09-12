@@ -33,6 +33,7 @@ cp .env.example .env   # y completar OPENROUTER_API_KEY
 | Que se construye y con que contrato | [`SPEC.md`](SPEC.md) |
 | Como se trabaja (y que esta prohibido) | [`CLAUDE.md`](CLAUDE.md) |
 | Decisiones y su porque | [`docs/adr/`](docs/adr/) |
+| Plan de implementacion por bloque | [`docs/plan/`](docs/plan/) |
 | Informe del ejercicio 3 | [`INFORME.md`](INFORME.md) |
 | Logs de conversaciones + indice | [`logs/`](logs/) |
 | Prompts versionados | [`prompts/`](prompts/) |
