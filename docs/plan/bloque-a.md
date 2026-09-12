@@ -20,7 +20,7 @@ Detalle completo de las 19 decisiones: ver `SPEC.md` y `docs/adr/`.
 - [ ] 1. `docs:` SPEC + este plan (este commit)
   **Verifica**: `SPEC.md` no tiene ningun `TBD` salvo el proveedor del slot 4.
 
-- [ ] 2. `feat:` `chat/slots.py` + `chat/env.py`, commitear `.env.example`
+- [x] 2. `feat:` `chat/slots.py` + `chat/env.py`, commitear `.env.example`
   **Verifica**: tests de `env.py` — precedencia (env real gana sobre archivo),
   comentarios en el `.env`, falla clara si falta la key.
 
