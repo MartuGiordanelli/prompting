@@ -185,7 +185,16 @@ respuesta del **ultimo turno assistant** del log (nunca de la subseccion
 escribir.
 
 Falla si esa respuesta tiene mas de un fence `python`: la ambiguedad de cual es
-"el" bloque de codigo no se resuelve en silencio.
+"el" bloque de codigo no se resuelve en silencio — **excepto** el caso en que
+el turno tiene subseccion `### reasoning`: como el razonamiento puede contener
+fences ` ```python ` anidados (caso adversarial) que hacen ver "mas de uno"
+donde la respuesta real tiene un solo bloque, ahi el script cae al **ultimo**
+fence `python` de todo el turno (razonamiento + respuesta) en vez de fallar.
+Sin `### reasoning`, la regla estricta se mantiene: mas de un fence es error.
+Este fallback esta cubierto en `scripts/tests/test_extract_code.py` y es el
+motivo por el que el intento 02 de Conway (`logs/20260916-153227-...md`,
+descartado en su momento por "no extraible sin ambiguedad") extrae limpio con
+la version actual de la herramienta — ver `logs/README.md`.
 
 ---
 
@@ -236,6 +245,7 @@ con un control y una variable, porque la rubrica compara dos corridas.
 | `slot2-cache.md` | 2 | Un bloque estatico grande, corrido dos veces: la segunda tiene que dar `cached_tokens > 0` |
 | `slot3-json.md` | 3 | Una respuesta que valida contra un JSON Schema |
 | `slot4-costo.md` | 4 | La misma pregunta que el slot 2, para contrastar costo |
+| `slot4-costo-con-catalogo.md` | 4 | La misma pregunta **y** el mismo catalogo que recibio el slot 2 (byte a byte igual a `slot2-cache.md`), para una comparacion de costo con tarea equivalente (mission.md:47); `slot4-costo.md` solo mandaba la pregunta y no es comparable |
 
 Ojo con el slot 2: Anthropic tiene un minimo de tokens para activar el cache. Un
 bloque estatico corto **no cachea** aunque lleve `cache_control`.
