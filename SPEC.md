@@ -191,18 +191,32 @@ Falla si esa respuesta tiene mas de un fence `python`: la ambiguedad de cual es
 
 ## 3. Reporte de usage
 
-`scripts/usage_report.py` recorre `logs/`, extrae los bloques ` ```json ` y emite
+`scripts/usage_report.py` recorre `logs/`, usa `logs/README.md` para clasificar
+cada archivo y extrae los bloques ` ```json ` de los turnos assistant. Falla si
+un log no figura en el indice o si el indice nombra un archivo ausente. Emite
 en stdout las tablas markdown que van a `INFORME.md`:
 
 - Por intento: tokens de entrada, salida, razonamiento, cacheados y costo.
-- Totales.
+- Totales separados para demos, Conway y validacion, mas el total de todos los
+  logs con usage registrado.
 - Ahorro por caching, **derivado** (no solo el conteo de `cached_tokens`).
 - Tabla "ej1: slot 2 vs slot 4, misma pregunta" — contrasta el costo de la misma
   consulta entre el slot con cache explicito y el escalon barato (§4.1).
 
-El script solo lee fences ` ```json `; un bloque `## error` con fence `text` no
-lo confunde y sus diferencias contra el dashboard de OpenRouter se explican en
-`INFORME.md`.
+El script solo lee fences ` ```json ` de turnos assistant; un bloque
+`## error` con fence `text` no lo confunde. Un log sin respuesta figura como
+`sin usage`: su facturacion real no se infiere como cero. Los campos ausentes
+tambien se muestran `n/d`. Las diferencias contra el dashboard de OpenRouter
+se explican en `INFORME.md`.
+
+Para derivar el ahorro, si OpenRouter informa `cache_discount` se usa ese
+valor. Si no lo informa, se compara el costo de entrada desglosado del turno
+con el costo esperado sin cache a la tarifa observada en un turno previo sin
+cache del mismo modelo y proveedor fijado. Sin proveedor fijado, solo se
+compara con un turno previo de la misma conversacion. Sin referencia comparable,
+el ahorro se muestra `n/d` y no se suma como cero. La tabla de slots 2 y 4
+senala si los mensajes tienen contextos distintos; no presenta su diferencia
+de costo como una medicion equivalente.
 
 No transcribir estos numeros a mano. El punto del script es que el informe no
 pueda reportar menos intentos de los que hay.
