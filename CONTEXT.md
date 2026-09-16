@@ -51,6 +51,10 @@ Intento y conversacion son la misma cosa vista desde dos angulos: "conversacion"
 es la unidad tecnica, "intento" es la unidad que cuenta el informe. Un intento
 con dos prompts sigue siendo **un** intento.
 
+Si un envio falla o se interrumpe antes de una respuesta, se conserva su log
+e indice aunque no tenga un turno `## user` completado. Ese caso tiene cero
+prompts auditables en el log y no puede ser ganador.
+
 "Corrida" es sinonimo de intento. Se prefiere "intento".
 
 ## Quemado
@@ -66,14 +70,17 @@ Los intentos quemados **se entregan**. Esconderlos cuesta puntos.
 
 ## Ganador
 
-El unico intento cuyo `vida.py` pasa los 9 tests de `test_vida.py`. El `vida.py`
-de la raiz del repo es, byte a byte, el que produjo el ganador.
+El intento seleccionado para la entrega, cuyo `vida.py` pasa los 9 tests de
+`test_vida.py`. El `vida.py` de la raiz del repo es, byte a byte, el que produjo
+ese intento. Un candidato anterior puede haber pasado los tests y no ser el
+ganador final si todavia faltaba demostrar otro requisito de la mision.
 
 ## Prefijo estatico
 
 El bloque de texto que abre **todos** los prompts de un mismo experimento y que
 no cambia nunca entre intentos: rol, contexto, contrato, restricciones y
-ejemplos. Vive en `prompts/conway/estatico.md`.
+ejemplos. La serie inicial lo guarda en `prompts/conway/estatico.md`; cada
+serie nueva guarda su propio archivo `estatico.md`, sin modificar el anterior.
 
 Es inmutable por definicion: si cambia, deja de ser prefijo estatico y el cache
 se pierde. Cambiarlo es empezar una serie nueva de intentos.
@@ -81,8 +88,9 @@ se pierde. Cambiarlo es empezar una serie nueva de intentos.
 ## Delta
 
 La parte variable de un prompt, la que va **al final**, despues del prefijo
-estatico. Es lo unico que se reescribe entre intentos. Vive en
-`prompts/conway/intento-NN.md`.
+estatico. Es lo unico que se reescribe entre intentos de una serie. Vive en
+`prompts/conway/intento-NN.md` para la serie inicial y junto al prefijo de
+cualquier serie nueva.
 
 ## Cache hit
 

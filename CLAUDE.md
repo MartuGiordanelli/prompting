@@ -39,12 +39,14 @@ Toda anotacion humana va en `logs/README.md`.
 Un intento quemado se entrega igual que el ganador. Borrar un log es peor que
 haber fallado.
 
-### 3. `prompts/conway/estatico.md` es inmutable mientras la serie este abierta
+### 3. Cada prefijo estatico de Conway es inmutable mientras su serie este abierta
 
 El cache por prefijo se rompe con un solo caracter de diferencia. Si hay que
 cambiarlo, se abre una serie nueva de intentos y se documenta en el informe.
 
-Lo que se reescribe entre intentos es `prompts/conway/intento-NN.md`.
+La serie inicial usa `prompts/conway/estatico.md`; la serie 02 conserva su
+propio prefijo en `prompts/conway/serie-02/estatico.md`. Lo que se reescribe
+entre intentos es el delta `intento-NN.md` de la serie correspondiente.
 
 ### 4. Ningun secreto entra al repo
 
@@ -77,7 +79,8 @@ docs/adr/            decisiones dificiles de revertir, con su porque
 docs/plan/           plan de implementacion del bloque A + proximos pasos de B, C, D
 chat/                interfaz de chat (REPL, `python3 -m chat`), con chat/tests/
 prompts/ej1/         prompts guionados de las demos de los 4 slots
-prompts/conway/      estatico.md (inmutable) + intento-NN.md (el delta)
+prompts/conway/      serie inicial: estatico.md (inmutable) + intento-NN.md
+                     serie 02: serie-02/estatico.md + intento-NN.md
 logs/                logs crudos + README.md como indice
 scripts/             usage_report.py: agrega los totales desde logs/
                      extract_code.py: extrae vida.py del log ganador

@@ -95,9 +95,13 @@ el log que lo muestra.
 PENDIENTE — `cached_tokens` por intento y el **ahorro derivado** en USD, no solo
 el conteo.
 
-El primer intento de la serie tiene `cached_tokens = 0` por definicion: el
-prefijo es nuevo. Los siguientes tienen que mostrar hits, porque
-`prompts/conway/estatico.md` no cambio entre ellos (ADR-0002).
+La serie inicial mantuvo `prompts/conway/estatico.md` sin cambios, pero los
+intentos 02 y 03 devolvieron `cached_tokens = 0`. Se abrio la serie 02 con un
+prefijo mas completo en `prompts/conway/serie-02/estatico.md`, sin alterar el
+prefijo anterior. El envio 04 se interrumpio antes de registrar una respuesta.
+El primer intento completado de la serie 02 (05) devolvio `cached_tokens = 0`;
+el segundo (06) devolvio `cached_tokens = 1024` y su codigo paso los 9 tests.
+El ahorro en USD queda pendiente del reporte de usage.
 
 ## 2.5 Contraste contra el dashboard
 

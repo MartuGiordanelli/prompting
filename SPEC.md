@@ -228,8 +228,12 @@ bloque estatico corto **no cachea** aunque lleve `cache_control`.
 
 ### 4.2 Ejercicio 2 — Conway
 
-`prompts/conway/estatico.md` (inmutable) + `prompts/conway/intento-NN.md` (el
-delta). La interfaz concatena estatico + delta, en ese orden. Ver ADR-0002.
+La serie inicial usa `prompts/conway/estatico.md` (inmutable) +
+`prompts/conway/intento-NN.md` (el delta). La serie 02 usa
+`prompts/conway/serie-02/estatico.md` + `intento-NN.md` en esa carpeta. Se
+abrio una serie nueva porque la primera no mostro cache hits entre intentos;
+ningun prefijo anterior se modifico. La interfaz concatena estatico + delta,
+en ese orden. Ver ADR-0002 e `INFORME.md` §2.4.
 
 El estatico tiene que cubrir los seis componentes: rol, contexto, instrucciones,
 restricciones, ejemplos e input. El contrato de `vida.py` va completo adentro:
@@ -245,7 +249,8 @@ restricciones, ejemplos e input. El contrato de `vida.py` va completo adentro:
 
 ## 5. `vida.py`
 
-Output del intento ganador, copiado sin modificar. Pasa los 9 tests de
+Output del intento ganador 06, extraido de su log con
+`scripts/extract_code.py`, sin edicion manual. Pasa los 9 tests de
 `test_vida.py`. Vive en la raiz, hermano del test (ADR-0001).
 
 ---

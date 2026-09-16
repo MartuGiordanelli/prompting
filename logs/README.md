@@ -25,11 +25,19 @@ Estan **todos**, incluidos los quemados.
 
 | Archivo | Intento | Prompts | Delta usado | Resultado | Por que se quemo |
 |---|---|---|---|---|---|
-| `20260916-153121-deepseek-deepseek-v4-flash-0731.md` | 01 | 1 (error) | `prompts/conway/intento-01.md` | Sin respuesta; error de red antes del turno | No aplica: fallo previo al primer turno |
+| `20260916-153121-deepseek-deepseek-v4-flash-0731.md` | 01 | 0 turnos (envio fallido) | `prompts/conway/intento-01.md` | Sin respuesta; error de red antes del turno | No aplica: fallo previo al primer turno |
 | `20260916-153227-deepseek-deepseek-v4-flash-0731.md` | 02 | 1 | `prompts/conway/intento-01.md` | No extraible sin ambiguedad | Se descarto porque el razonamiento contenia varios fences `python` |
-| `20260916-153635-deepseek-deepseek-v4-flash-0731.md` | 03 | 1 | `prompts/conway/intento-02.md` | Ganador: pasa los 9 tests | - |
+| `20260916-153635-deepseek-deepseek-v4-flash-0731.md` | 03 | 1 | `prompts/conway/intento-02.md` | Pasa los 9 tests; reemplazado por una serie que demuestra cache entre intentos | No se quemo |
+| `20260916-161840-deepseek-deepseek-v4-flash-0731.md` | 04 | 0 turnos (envio interrumpido) | `prompts/conway/serie-02/intento-01.md` | El cliente se interrumpio mientras leia la respuesta HTTP; el log solo tiene encabezado | No hay respuesta ni usage |
+| `20260916-163033-deepseek-deepseek-v4-flash-0731.md` | 05 | 1 | `prompts/conway/serie-02/intento-01.md` | Pasa los 9 tests; `cached_tokens = 0` | No se quemo |
+| `20260916-163302-deepseek-deepseek-v4-flash-0731.md` | 06 | 1 | `prompts/conway/serie-02/intento-02.md` | Ganador: pasa los 9 tests; `cached_tokens = 1024` | - |
 
-Ganador: intento 03 (`20260916-153635-deepseek-deepseek-v4-flash-0731.md`)
+Ganador: intento 06 (`20260916-163302-deepseek-deepseek-v4-flash-0731.md`).
+La serie 01 usa `prompts/conway/estatico.md`; la serie 02 usa
+`prompts/conway/serie-02/estatico.md`. El prefijo de cada serie se mantuvo
+identico entre sus intentos. El intento 04 no tiene un bloque `## user` porque
+la interfaz solo registra turnos completados; se conserva el log incompleto
+para no ocultar el envio interrumpido.
 
 El `vida.py` de la raiz es, byte a byte, el bloque de codigo de ese log.
 
