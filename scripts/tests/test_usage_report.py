@@ -18,12 +18,12 @@ from scripts.usage_report import (
 )
 
 
-def usage(*, prompt=100, output=10, cached=0, prompt_cost="0.01", cost="0.02"):
+def usage(*, prompt=100, output=10, cached=0, cache_write=0, prompt_cost="0.01", cost="0.02"):
     return {
         "prompt_tokens": prompt,
         "completion_tokens": output,
         "cost": Decimal(cost),
-        "prompt_tokens_details": {"cached_tokens": cached},
+        "prompt_tokens_details": {"cached_tokens": cached, "cache_write_tokens": cache_write},
         "completion_tokens_details": {"reasoning_tokens": 2},
         "cost_details": {"upstream_inference_prompt_cost": Decimal(prompt_cost)},
     }
@@ -98,6 +98,25 @@ class CacheSavingsTests(unittest.TestCase):
         self.assertIsNone(saving)
         self.assertIn("sin referencia", method)
 
+    def test_ignores_a_reference_turn_that_paid_the_cache_write_rate(self):
+        # Un turno con cache_write_tokens > 0 pago la tarifa de ESCRITURA de
+        # cache (mas cara que la tarifa base de entrada, ver el par de logs
+        # del slot 2 en logs/20260915-155359 y -155404). Usarlo como "tarifa
+        # sin cache" infla el ahorro derivado (bug verificado en el reporte).
+        base = UsageTurn(
+            "write.md", 1, "x/y", "same-provider", "",
+            usage(prompt=9348, cached=0, cache_write=9346, prompt_cost="0.0116845"),
+        )
+        hit = UsageTurn(
+            "read.md", 1, "x/y", "same-provider", "",
+            usage(prompt=9348, cached=9346, prompt_cost="0.0009366"),
+        )
+
+        saving, method = _cache_saving(hit, [base])
+
+        self.assertIsNone(saving)
+        self.assertIn("sin referencia", method)
+
 
 class ReportTests(unittest.TestCase):
     def test_absent_reasoning_is_unknown_not_zero(self):
@@ -127,6 +146,25 @@ class ReportTests(unittest.TestCase):
         self.assertIn("Misma pregunta, distinto contexto", report)
         self.assertIn("| Todos los logs | 3 | 2 |", report)
         self.assertIn("| 01 | `failed.md` | 0 | n/d", report)
+
+    def test_flags_equal_demo_context_as_a_valid_comparison(self):
+        catalogo_y_pregunta = "catalogo\nPregunta: precio?"
+        slot2 = LogRecord(
+            IndexEntry("slot2.md", "ej1", slot="2"), 1, 0,
+            (UsageTurn("slot2.md", 1, "a/m", "a", catalogo_y_pregunta,
+                       usage(cost="0.02")),),
+        )
+        slot4_equivalente = LogRecord(
+            IndexEntry("slot4.md", "ej1", slot="4"), 1, 0,
+            (UsageTurn("slot4.md", 1, "b/m", None, catalogo_y_pregunta,
+                       usage(cost="0.01")),),
+        )
+
+        report = render([slot2, slot4_equivalente])
+
+        self.assertIn("Mismo contexto de entrada", report)
+        self.assertIn("`slot4.md`", report)
+        self.assertNotIn("Misma pregunta, distinto contexto", report)
 
 
 if __name__ == "__main__":

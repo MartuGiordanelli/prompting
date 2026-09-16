@@ -223,6 +223,12 @@ def _cache_saving(turn: UsageTurn, earlier: list[UsageTurn]) -> tuple[Decimal | 
             continue
         if _field(base.usage, "prompt_tokens_details", "cached_tokens") != 0:
             continue
+        base_write = _field(base.usage, "prompt_tokens_details", "cache_write_tokens")
+        if base_write is not None and base_write > 0:
+            # Un turno con cache_write_tokens > 0 pago la tarifa de escritura
+            # de cache (mas cara que la de entrada base), no la tarifa base:
+            # usarlo como referencia "sin cache" infla el ahorro derivado.
+            continue
         base_prompt = _field(base.usage, "prompt_tokens")
         base_cost = _field(base.usage, "cost_details", "upstream_inference_prompt_cost")
         if base_prompt is None or base_prompt <= 0 or base_cost is None:
