@@ -25,8 +25,10 @@ Estan **todos**, incluidos los quemados.
 
 | Archivo | Intento | Prompts | Delta usado | Resultado | Por que se quemo |
 |---|---|---|---|---|---|
-| | 01 | | `prompts/conway/intento-01.md` | | |
+| `20260916-153121-deepseek-deepseek-v4-flash-0731.md` | 01 | 1 (error) | `prompts/conway/intento-01.md` | Sin respuesta; error de red antes del turno | No aplica: fallo previo al primer turno |
+| `20260916-153227-deepseek-deepseek-v4-flash-0731.md` | 02 | 1 | `prompts/conway/intento-01.md` | No extraible sin ambiguedad | Se descarto porque el razonamiento contenia varios fences `python` |
+| `20260916-153635-deepseek-deepseek-v4-flash-0731.md` | 03 | 1 | `prompts/conway/intento-02.md` | Ganador: pasa los 9 tests | - |
 
-Ganador: PENDIENTE
+Ganador: intento 03 (`20260916-153635-deepseek-deepseek-v4-flash-0731.md`)
 
 El `vida.py` de la raiz es, byte a byte, el bloque de codigo de ese log.

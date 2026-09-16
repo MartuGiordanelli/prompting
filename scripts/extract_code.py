@@ -129,6 +129,17 @@ def extract(log_text: str) -> str:
     response = _strip_reasoning(block)
     fences = _python_fences(response)
 
+    # El razonamiento puede contener fences anidados. Como el formato del log
+    # garantiza que reasoning aparece antes de la respuesta y que el bloque de
+    # codigo de la respuesta es el ultimo fence python del turno, usamos ese
+    # ultimo fence solo cuando la subseccion reasoning hizo ambiguo el parseo.
+    # Sin reasoning se conserva la regla estricta: mas de un fence es error.
+    has_reasoning = any(line.strip() == REASONING_HEADING for line in block)
+    if len(fences) != 1 and has_reasoning:
+        all_fences = _python_fences(block)
+        if all_fences:
+            fences = [all_fences[-1]]
+
     if len(fences) != 1:
         raise ExtractError(
             "la respuesta del ultimo turno assistant tiene "
