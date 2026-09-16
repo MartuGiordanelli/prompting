@@ -296,15 +296,33 @@ def render(records: list[LogRecord]) -> str:
             f"{count(metric(turns, 'input'))} | {count(metric(turns, 'cached'))} | "
             f"{count(metric(turns, 'output'))} | {money(metric(turns, 'cost'))} |"
         )
-    slot2 = [turn.user_text for record in comparison if record.entry.slot == "2"
+    cache_marker = "[cache_control: ephemeral]\n"
+    def _strip_marker(text: str) -> str:
+        return text[len(cache_marker):] if text.startswith(cache_marker) else text
+
+    slot2 = [_strip_marker(turn.user_text) for record in comparison
+             if record.entry.slot == "2" for turn in record.turns]
+    slot4 = [(record.entry.filename, _strip_marker(turn.user_text))
+             for record in comparison if record.entry.slot == "4"
              for turn in record.turns]
-    slot4 = [turn.user_text for record in comparison if record.entry.slot == "4"
-             for turn in record.turns]
-    if slot2 and slot4 and any(question in context for question in slot4 for context in slot2):
-        if any(question != context for question in slot4 for context in slot2):
-            lines.extend(("", "Misma pregunta, distinto contexto de entrada: el slot 2 "
-                          "recibio el catalogo y el slot 4 solo la pregunta. "
-                          "Estos costos no miden una tarea equivalente."))
+    # Cada log del slot 4 se juzga contra el slot 2 por separado: un log puede
+    # haber recibido el mismo contexto (catalogo + pregunta, byte a byte) y
+    # otro solo la pregunta, y ambos pueden convivir en el indice.
+    equivalent = sorted({filename for filename, text in slot4 if text in slot2})
+    non_equivalent = sorted({
+        filename for filename, text in slot4
+        if text not in slot2 and any(text in context for context in slot2)
+    })
+    if non_equivalent:
+        lines.extend(("", "Misma pregunta, distinto contexto de entrada: el slot 2 "
+                      "recibio el catalogo y el slot 4 solo la pregunta en "
+                      + ", ".join(f"`{name}`" for name in non_equivalent) + ". "
+                      "Estos costos no miden una tarea equivalente."))
+    if equivalent:
+        lines.extend(("", "Mismo contexto de entrada (catalogo + pregunta, byte a byte "
+                      "identico al del slot 2) en "
+                      + ", ".join(f"`{name}`" for name in equivalent) + ": "
+                      "esta fila si compara una tarea equivalente (mission.md:47)."))
     return "\n".join(lines) + "\n"
 
 

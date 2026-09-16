@@ -17,7 +17,8 @@ Vocabulario: `../CONTEXT.md`.
 | `20260915-155359-anthropic-claude-haiku-4.5.md` | 2 | `anthropic/claude-haiku-4.5` | Primera pasada del contexto estatico (`prompts/ej1/slot2-cache.md`), `cached_tokens = 0` |
 | `20260915-155404-anthropic-claude-haiku-4.5.md` | 2 | `anthropic/claude-haiku-4.5` | Segunda pasada: cache hit, `cached_tokens = 9346` de 9348 |
 | `20260915-155410-google-gemini-3.7-flash.md` | 3 | `google/gemini-3.7-flash` | Salida estructurada contra JSON Schema (`prompts/ej1/slot3-json.md` + `slot3-schema.json`) |
-| `20260915-155418-deepseek-deepseek-v4-flash-0731.md` | 4 | `deepseek/deepseek-v4-flash-0731` | Misma pregunta que el slot 2 (`prompts/ej1/slot4-costo.md`, sin el catalogo), para contrastar costo |
+| `20260915-155418-deepseek-deepseek-v4-flash-0731.md` | 4 | `deepseek/deepseek-v4-flash-0731` | Misma pregunta que el slot 2, pero **sin** el catalogo (`prompts/ej1/slot4-costo.md`). La comparacion de costo contra el slot 2 no es equivalente: distinto contexto de entrada |
+| `20260916-180222-deepseek-deepseek-v4-flash-0731.md` | 4 | `deepseek/deepseek-v4-flash-0731` | Misma pregunta **con** el mismo catalogo que recibio el slot 2 (`prompts/ej1/slot4-costo-con-catalogo.md`, byte a byte igual a `prompts/ej1/slot2-cache.md`), para contrastar costo con una tarea equivalente (mission.md:47) |
 
 ## Ejercicio 2 — intentos de Conway
 
