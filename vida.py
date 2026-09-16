@@ -1,50 +1,66 @@
 import sys
 
-def step(grid):
-    rows = len(grid)
-    cols = len(grid[0]) if rows else 0
-    offsets = (
-        (-1, -1), (-1, 0), (-1, 1),
-        (0, -1),           (0, 1),
-        (1, -1),  (1, 0),  (1, 1),
-    )
+def leer_grilla(ruta):
+    with open(ruta, 'r', encoding='utf-8') as f:
+        return f.read().splitlines()
 
-    new_grid = []
-    for r in range(rows):
-        new_row = []
-        for c in range(cols):
-            live_neighbors = 0
-            for dr, dc in offsets:
-                nr = r + dr
-                nc = c + dc
-                if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == '#':
-                    live_neighbors += 1
+def contar_vecinos(grilla, fila, col):
+    filas = len(grilla)
+    columnas = len(grilla[0]) if filas else 0
+    vivos = 0
 
-            if live_neighbors == 3 or (grid[r][c] == '#' and live_neighbors == 2):
-                new_row.append('#')
+    for i in range(fila - 1, fila + 2):
+        for j in range(col - 1, col + 2):
+            if i == fila and j == col:
+                continue
+            if 0 <= i < filas and 0 <= j < columnas:
+                if grilla[i][j] == '#':
+                    vivos += 1
+
+    return vivos
+
+def siguiente_generacion(grilla):
+    if not grilla:
+        return []
+
+    filas = len(grilla)
+    columnas = len(grilla[0])
+    nueva = []
+
+    for i in range(filas):
+        fila_nueva = []
+        for j in range(columnas):
+            vecinos = contar_vecinos(grilla, i, j)
+
+            if grilla[i][j] == '#':
+                fila_nueva.append('#' if vecinos in (2, 3) else '.')
             else:
-                new_row.append('.')
+                fila_nueva.append('#' if vecinos == 3 else '.')
 
-        new_grid.append(''.join(new_row))
+        nueva.append(''.join(fila_nueva))
 
-    return new_grid
+    return nueva
 
 def main():
     if len(sys.argv) != 3:
-        sys.stderr.write("Usage: python3 vida.py <initial_state_file> <generations>\n")
+        sys.stderr.write("Uso: python3 vida.py <archivo_estado_inicial> <generaciones>\n")
         sys.exit(1)
 
-    filename = sys.argv[1]
-    generations = int(sys.argv[2])
+    ruta = sys.argv[1]
 
-    with open(filename) as f:
-        grid = [line.rstrip('\n') for line in f]
+    try:
+        generaciones = int(sys.argv[2])
+    except ValueError:
+        sys.stderr.write("Error: la cantidad de generaciones debe ser un entero.\n")
+        sys.exit(1)
 
-    for _ in range(generations):
-        grid = step(grid)
+    grilla = leer_grilla(ruta)
 
-    if grid:
-        sys.stdout.write('\n'.join(grid) + '\n')
+    for _ in range(generaciones):
+        grilla = siguiente_generacion(grilla)
+
+    if grilla:
+        sys.stdout.write('\n'.join(grilla) + '\n')
 
 if __name__ == '__main__':
     main()
