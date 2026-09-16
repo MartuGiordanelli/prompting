@@ -25,8 +25,8 @@ codigo, solo de la tabla de slots.
 **Recibe de A**: la interfaz funcionando, `/effort` operativo, el mecanismo de
 `/file <estatico> [<delta>]`.
 
-**Produce**: el slug de proveedor fijado para el slot 4 en `chat/slots.py`
-(hoy `TBD` en `SPEC.md` §1.2), elegido con una prueba de 2 llamadas donde la
+**Produce**: el slug de proveedor fijado para el slot 4 en `chat/slots.py`,
+elegido con una prueba de 2 llamadas donde la
 segunda de `cache_read < prompt` — es la evidencia de que el proveedor elegido
 sostiene el cache entre llamadas. Anotar el slug elegido y por que en
 `SPEC.md` o en un ADR.

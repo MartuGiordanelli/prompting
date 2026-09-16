@@ -23,7 +23,7 @@ class Slot:
             ``cache_control: {"type": "ephemeral"}``.
         fixed_provider: slug de proveedor fijado (``provider: {order: [...],
             allow_fallbacks: false}``), o ``None`` si no se fija ninguno.
-            El slot 4 lo deja en ``None`` hasta que el bloque C lo decida.
+            El slot 4 queda fijado despues de la prueba de cache del bloque C.
     """
 
     number: int
@@ -65,7 +65,7 @@ SLOTS: tuple[Slot, ...] = (
         supported_efforts=("max", "high", "low"),
         default_effort="high",
         cache_control=False,
-        fixed_provider=None,  # TBD: lo fija el bloque C.
+        fixed_provider="sail-research",
     ),
 )
 

@@ -32,3 +32,9 @@ Estan **todos**, incluidos los quemados.
 Ganador: intento 03 (`20260916-153635-deepseek-deepseek-v4-flash-0731.md`)
 
 El `vida.py` de la raiz es, byte a byte, el bloque de codigo de ese log.
+
+## Validacion del proveedor del slot 4
+
+| Archivo | Modelo | Proveedor fijado | Que demuestra |
+|---|---|---|---|
+| `20260916-155544-deepseek-deepseek-v4-flash-0731.md` | `deepseek/deepseek-v4-flash-0731` | `sail-research` | Dos llamadas con `cached_tokens = 0` y `cached_tokens = 1558` |
