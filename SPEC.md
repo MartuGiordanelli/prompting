@@ -46,7 +46,7 @@ siguen vigentes, sin sustituciones.
 | 1 | `openai/gpt-5.6-luna` | max, xhigh, high, medium, low, none | medium | no | — |
 | 2 | `anthropic/claude-haiku-4.5` | ninguno | — | si | `anthropic` |
 | 3 | `google/gemini-3.7-flash` | high, medium, low (razonamiento obligatorio) | medium | no | — |
-| 4 | `deepseek/deepseek-v4-flash-0731` | max, high, low | high | no | TBD (lo elige el bloque C) |
+| 4 | `deepseek/deepseek-v4-flash-0731` | max, high, low | high | no | `sail-research` |
 
 Los efforts de cada slot salen del campo `reasoning.supported_efforts` /
 `default_effort` que trae `/models` para ese modelo. Sin `/effort` no se manda

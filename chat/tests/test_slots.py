@@ -29,8 +29,8 @@ class SlotsTableTests(unittest.TestCase):
         self.assertTrue(slot2.cache_control)
         self.assertEqual(slot2.fixed_provider, "anthropic")
 
-    def test_slot_4_proveedor_tbd(self):
-        self.assertIsNone(get_slot(4).fixed_provider)
+    def test_slot_4_fija_proveedor_con_cache(self):
+        self.assertEqual(get_slot(4).fixed_provider, "sail-research")
 
 
 class ValidateEffortTests(unittest.TestCase):
