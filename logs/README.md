@@ -37,4 +37,4 @@ El `vida.py` de la raiz es, byte a byte, el bloque de codigo de ese log.
 
 | Archivo | Modelo | Proveedor fijado | Que demuestra |
 |---|---|---|---|
-| `20260916-155544-deepseek-deepseek-v4-flash-0731.md` | `deepseek/deepseek-v4-flash-0731` | `sail-research` | Dos llamadas con `cached_tokens = 0` y `cached_tokens = 1558` |
+| `20260916-155544-deepseek-deepseek-v4-flash-0731.md` | `deepseek/deepseek-v4-flash-0731` | No consta en el encabezado | Dos llamadas con `cached_tokens = 0` y `cached_tokens = 1558` dentro de la misma conversacion |
