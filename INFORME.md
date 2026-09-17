@@ -120,16 +120,20 @@ se inventa un cero para los logs que no tienen datos suficientes.
 
 ## 2.5 Contraste contra el dashboard
 
+El subtotal de los intentos de Conway es **USD 0,0135048928**. Para contrastar
+el gasto de la cuenta con el dashboard se toma el total de todos los logs
+registrados, que incluye las demos del ejercicio 1 y la validación del
+proveedor:
+
 | Fuente | Gasto USD |
 |---|---|
-| Suma de los logs (`usage_report.py`) | **USD 0,0135048928** |
-| Dashboard de actividad de OpenRouter | PENDIENTE |
-| Diferencia | PENDIENTE |
+| Suma de todos los logs (`usage_report.py`) | **USD 0,0325394089** |
+| Dashboard de actividad de OpenRouter | **USD 0,0325394089** |
+| Diferencia | **USD 0** |
 
-Explicacion de la diferencia, si la hay: falta incorporar el importe que figura
-en el dashboard de actividad. Los intentos 01 y 04 no tienen bloques de usage,
-por eso el total de los logs es un total **registrado**, no una prueba de que
-esos envíos hayan costado USD 0.
+La suma cierra con el dashboard. Los intentos 01 y 04 no tienen bloques de
+usage; por eso el total de los logs es un total **registrado**, no una prueba de
+que esos envíos hayan costado USD 0.
 
 ## 2.6 Conclusion
 
