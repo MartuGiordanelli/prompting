@@ -333,6 +333,11 @@ def render(records: list[LogRecord]) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
+    # El reporte contiene caracteres Unicode (por ejemplo, el separador de
+    # títulos). En Windows la salida estándar puede usar cp1252 y fallar aun
+    # cuando todos los logs se hayan leído correctamente.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--logs-dir", type=Path, default=DEFAULT_LOGS_DIR)
     args = parser.parse_args(argv)
