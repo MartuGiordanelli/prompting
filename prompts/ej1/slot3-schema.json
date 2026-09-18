@@ -1,0 +1,26 @@
+{
+  "name": "perfil_profesional",
+  "type": "object",
+  "properties": {
+    "nombre": {
+      "type": "string"
+    },
+    "rol": {
+      "type": "string"
+    },
+    "anios_experiencia": {
+      "type": "integer"
+    },
+    "ciudad": {
+      "type": "string"
+    },
+    "habilidades": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": ["nombre", "rol", "anios_experiencia", "ciudad", "habilidades"],
+  "additionalProperties": false
+}

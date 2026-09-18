@@ -66,6 +66,18 @@ Compara la tabla hardcodeada de `chat/slots.py` contra el catalogo en vivo de
 `GET /models` de OpenRouter y avisa diferencias (un id que cayo del catalogo,
 efforts que cambiaron). No falla duro: imprime los avisos y termina.
 
+## Generar las tablas de usage
+
+```sh
+python3 scripts/usage_report.py
+```
+
+El comando lee todos los logs y su indice, e imprime tablas Markdown para el
+informe: intentos de Conway, totales, ahorro por cache y comparacion de costo
+entre los slots 2 y 4. Marca `n/d` cuando un log no trae usage o cuando el
+ahorro no se puede derivar con una referencia comparable. No necesita red ni
+API key.
+
 ## Mapa del repo
 
 | Que | Donde |

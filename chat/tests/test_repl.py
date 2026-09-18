@@ -60,18 +60,26 @@ class ModelCommandTests(unittest.TestCase):
         self.assertEqual(state.slot.number, 2)
         self.assertFalse(any("Confirmar" in p for p in input_func.prompts))
 
+    @patch("chat.repl.ConversationLog")
     @patch("chat.repl.send_request")
-    def test_cambiar_model_con_turnos_pide_confirmacion_y_respeta_no(self, mock_send):
+    def test_cambiar_model_con_turnos_pide_confirmacion_y_respeta_no(
+        self, mock_send, mock_log_cls
+    ):
         mock_send.return_value = _fake_response()
+        mock_log_cls.return_value = _mock_log()
         state = ReplState(get_slot(1))
         input_func = _scripted_input(["hola", "/model 2", "n", "/exit"])
         run_repl(state, "fake-key", input_func=input_func, print_func=lambda _: None)
         self.assertEqual(state.slot.number, 1)
         self.assertTrue(any("Confirmar" in p for p in input_func.prompts))
 
+    @patch("chat.repl.ConversationLog")
     @patch("chat.repl.send_request")
-    def test_cambiar_model_con_turnos_pide_confirmacion_y_respeta_si(self, mock_send):
+    def test_cambiar_model_con_turnos_pide_confirmacion_y_respeta_si(
+        self, mock_send, mock_log_cls
+    ):
         mock_send.return_value = _fake_response()
+        mock_log_cls.return_value = _mock_log()
         state = ReplState(get_slot(1))
         run_repl(
             state,
@@ -97,9 +105,13 @@ class EffortCommandTests(unittest.TestCase):
         self.assertIsNone(state.effort)
         self.assertTrue(any("error" in o.lower() for o in outputs))
 
+    @patch("chat.repl.ConversationLog")
     @patch("chat.repl.send_request")
-    def test_effort_valido_que_cambia_el_valor_cierra_la_conversacion(self, mock_send):
+    def test_effort_valido_que_cambia_el_valor_cierra_la_conversacion(
+        self, mock_send, mock_log_cls
+    ):
         mock_send.return_value = _fake_response()
+        mock_log_cls.return_value = _mock_log()
         state = ReplState(get_slot(1))
         run_repl(
             state,
@@ -113,9 +125,11 @@ class EffortCommandTests(unittest.TestCase):
 
 
 class BurnConfirmationTests(unittest.TestCase):
+    @patch("chat.repl.ConversationLog")
     @patch("chat.repl.send_request")
-    def test_tercer_prompt_pide_confirmacion(self, mock_send):
+    def test_tercer_prompt_pide_confirmacion(self, mock_send, mock_log_cls):
         mock_send.return_value = _fake_response()
+        mock_log_cls.return_value = _mock_log()
         state = ReplState(get_slot(1))
         input_func = _scripted_input(["uno", "dos", "tres", "y", "/exit"])
         run_repl(state, "fake-key", input_func=input_func, print_func=lambda _: None)
@@ -123,9 +137,11 @@ class BurnConfirmationTests(unittest.TestCase):
         self.assertEqual(state.prompt_count, 3)
         self.assertTrue(any("quema" in p.lower() for p in input_func.prompts))
 
+    @patch("chat.repl.ConversationLog")
     @patch("chat.repl.send_request")
-    def test_tercer_prompt_con_no_no_manda_el_request(self, mock_send):
+    def test_tercer_prompt_con_no_no_manda_el_request(self, mock_send, mock_log_cls):
         mock_send.return_value = _fake_response()
+        mock_log_cls.return_value = _mock_log()
         state = ReplState(get_slot(1))
         run_repl(
             state,

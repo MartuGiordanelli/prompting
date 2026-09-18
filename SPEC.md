@@ -46,7 +46,7 @@ siguen vigentes, sin sustituciones.
 | 1 | `openai/gpt-5.6-luna` | max, xhigh, high, medium, low, none | medium | no | — |
 | 2 | `anthropic/claude-haiku-4.5` | ninguno | — | si | `anthropic` |
 | 3 | `google/gemini-3.7-flash` | high, medium, low (razonamiento obligatorio) | medium | no | — |
-| 4 | `deepseek/deepseek-v4-flash-0731` | max, high, low | high | no | TBD (lo elige el bloque C) |
+| 4 | `deepseek/deepseek-v4-flash-0731` | max, high, low | high | no | `sail-research` |
 
 Los efforts de cada slot salen del campo `reasoning.supported_efforts` /
 `default_effort` que trae `/models` para ese modelo. Sin `/effort` no se manda
@@ -185,24 +185,47 @@ respuesta del **ultimo turno assistant** del log (nunca de la subseccion
 escribir.
 
 Falla si esa respuesta tiene mas de un fence `python`: la ambiguedad de cual es
-"el" bloque de codigo no se resuelve en silencio.
+"el" bloque de codigo no se resuelve en silencio — **excepto** el caso en que
+el turno tiene subseccion `### reasoning`: como el razonamiento puede contener
+fences ` ```python ` anidados (caso adversarial) que hacen ver "mas de uno"
+donde la respuesta real tiene un solo bloque, ahi el script cae al **ultimo**
+fence `python` de todo el turno (razonamiento + respuesta) en vez de fallar.
+Sin `### reasoning`, la regla estricta se mantiene: mas de un fence es error.
+Este fallback esta cubierto en `scripts/tests/test_extract_code.py` y es el
+motivo por el que el intento 02 de Conway (`logs/20260916-153227-...md`,
+descartado en su momento por "no extraible sin ambiguedad") extrae limpio con
+la version actual de la herramienta — ver `logs/README.md`.
 
 ---
 
 ## 3. Reporte de usage
 
-`scripts/usage_report.py` recorre `logs/`, extrae los bloques ` ```json ` y emite
+`scripts/usage_report.py` recorre `logs/`, usa `logs/README.md` para clasificar
+cada archivo y extrae los bloques ` ```json ` de los turnos assistant. Falla si
+un log no figura en el indice o si el indice nombra un archivo ausente. Emite
 en stdout las tablas markdown que van a `INFORME.md`:
 
 - Por intento: tokens de entrada, salida, razonamiento, cacheados y costo.
-- Totales.
+- Totales separados para demos, Conway y validacion, mas el total de todos los
+  logs con usage registrado.
 - Ahorro por caching, **derivado** (no solo el conteo de `cached_tokens`).
 - Tabla "ej1: slot 2 vs slot 4, misma pregunta" — contrasta el costo de la misma
   consulta entre el slot con cache explicito y el escalon barato (§4.1).
 
-El script solo lee fences ` ```json `; un bloque `## error` con fence `text` no
-lo confunde y sus diferencias contra el dashboard de OpenRouter se explican en
-`INFORME.md`.
+El script solo lee fences ` ```json ` de turnos assistant; un bloque
+`## error` con fence `text` no lo confunde. Un log sin respuesta figura como
+`sin usage`: su facturacion real no se infiere como cero. Los campos ausentes
+tambien se muestran `n/d`. Las diferencias contra el dashboard de OpenRouter
+se explican en `INFORME.md`.
+
+Para derivar el ahorro, si OpenRouter informa `cache_discount` se usa ese
+valor. Si no lo informa, se compara el costo de entrada desglosado del turno
+con el costo esperado sin cache a la tarifa observada en un turno previo sin
+cache del mismo modelo y proveedor fijado. Sin proveedor fijado, solo se
+compara con un turno previo de la misma conversacion. Sin referencia comparable,
+el ahorro se muestra `n/d` y no se suma como cero. La tabla de slots 2 y 4
+senala si los mensajes tienen contextos distintos; no presenta su diferencia
+de costo como una medicion equivalente.
 
 No transcribir estos numeros a mano. El punto del script es que el informe no
 pueda reportar menos intentos de los que hay.
@@ -222,14 +245,19 @@ con un control y una variable, porque la rubrica compara dos corridas.
 | `slot2-cache.md` | 2 | Un bloque estatico grande, corrido dos veces: la segunda tiene que dar `cached_tokens > 0` |
 | `slot3-json.md` | 3 | Una respuesta que valida contra un JSON Schema |
 | `slot4-costo.md` | 4 | La misma pregunta que el slot 2, para contrastar costo |
+| `slot4-costo-con-catalogo.md` | 4 | La misma pregunta **y** el mismo catalogo que recibio el slot 2 (byte a byte igual a `slot2-cache.md`), para una comparacion de costo con tarea equivalente (mission.md:47); `slot4-costo.md` solo mandaba la pregunta y no es comparable |
 
 Ojo con el slot 2: Anthropic tiene un minimo de tokens para activar el cache. Un
 bloque estatico corto **no cachea** aunque lleve `cache_control`.
 
 ### 4.2 Ejercicio 2 — Conway
 
-`prompts/conway/estatico.md` (inmutable) + `prompts/conway/intento-NN.md` (el
-delta). La interfaz concatena estatico + delta, en ese orden. Ver ADR-0002.
+La serie inicial usa `prompts/conway/estatico.md` (inmutable) +
+`prompts/conway/intento-NN.md` (el delta). La serie 02 usa
+`prompts/conway/serie-02/estatico.md` + `intento-NN.md` en esa carpeta. Se
+abrio una serie nueva porque la primera no mostro cache hits entre intentos;
+ningun prefijo anterior se modifico. La interfaz concatena estatico + delta,
+en ese orden. Ver ADR-0002 e `INFORME.md` §2.4.
 
 El estatico tiene que cubrir los seis componentes: rol, contexto, instrucciones,
 restricciones, ejemplos e input. El contrato de `vida.py` va completo adentro:
@@ -245,7 +273,8 @@ restricciones, ejemplos e input. El contrato de `vida.py` va completo adentro:
 
 ## 5. `vida.py`
 
-Output del intento ganador, copiado sin modificar. Pasa los 9 tests de
+Output del intento ganador 06, extraido de su log con
+`scripts/extract_code.py`, sin edicion manual. Pasa los 9 tests de
 `test_vida.py`. Vive en la raiz, hermano del test (ADR-0001).
 
 ---
